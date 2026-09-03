@@ -73,10 +73,17 @@ def certify_candidate(
         raise ValueError("decision has the wrong shape")
     if not np.all(np.isfinite(values)):
         raise ValueError("decision must be finite")
-    candidate_multiplier = estimate_multiplier(instance, values) if multiplier is None else float(multiplier)
+    candidate_multiplier = (
+        estimate_multiplier(instance, values) if multiplier is None else float(multiplier)
+    )
     if not np.isfinite(candidate_multiplier):
         raise ValueError("multiplier must be finite")
-    kkt = audit_kkt(instance, values, candidate_multiplier, feasibility_tolerance=feasibility_tolerance)
+    kkt = audit_kkt(
+        instance,
+        values,
+        candidate_multiplier,
+        feasibility_tolerance=feasibility_tolerance,
+    )
     decision_tuple = tuple(float(value) for value in values)
     primal = instance.objective(decision_tuple)
     lower_bound = dual_value(instance, candidate_multiplier)
