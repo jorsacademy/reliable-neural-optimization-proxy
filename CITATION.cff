@@ -1,0 +1,16 @@
+cff-version: 1.2.0
+message: "If you use this software in academic work, cite the repository and the exact version or commit."
+title: "Reliable Neural Optimization Proxy"
+type: software
+authors:
+  - alias: jorsacademy
+version: 0.1.0
+date-released: 2026-09-03
+repository-code: "https://github.com/jorsacademy/reliable-neural-optimization-proxy"
+license: PolyForm-Noncommercial-1.0.0
+keywords:
+  - operations research
+  - optimization proxy
+  - machine learning
+  - primal-dual certificate
+  - economic dispatch

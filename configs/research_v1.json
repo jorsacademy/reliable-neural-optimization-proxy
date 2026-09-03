@@ -1,0 +1,38 @@
+{
+  "protocol_version": "research_v1",
+  "problem": "strictly_convex_separable_dispatch",
+  "train_samples": 1500,
+  "validation_samples": 300,
+  "evaluation_samples_per_regime": 200,
+  "unit_count": 8,
+  "training_regime": "in_distribution",
+  "evaluation_regimes": [
+    "in_distribution",
+    "high_demand",
+    "low_demand",
+    "cost_shift",
+    "capacity_shift",
+    "combined_shift"
+  ],
+  "model": {
+    "architecture": "numpy_mlp_2x_tanh",
+    "hidden_dim": 64,
+    "epochs": 100,
+    "batch_size": 128,
+    "learning_rate": 0.002,
+    "weight_decay": 0.000001,
+    "patience": 15,
+    "gradient_clip": 10.0
+  },
+  "acceptance": {
+    "relative_gap_tolerance": 0.01,
+    "absolute_gap_tolerance": 0.000001,
+    "curve_relative_tolerances": [0.001, 0.005, 0.01, 0.02, 0.05]
+  },
+  "root_seed": 2026,
+  "seed_offsets": {
+    "validation": 100000,
+    "evaluation": 200000,
+    "evaluation_regime_stride": 10000
+  }
+}

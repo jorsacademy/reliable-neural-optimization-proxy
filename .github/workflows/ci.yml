@@ -1,0 +1,74 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Python ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install package and development dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -e ".[dev]"
+          python -m pip check
+
+      - name: Lint
+        run: ruff check .
+
+      - name: Check formatting
+        run: ruff format --check .
+
+      - name: Type check
+        run: mypy --python-version "${{ matrix.python-version }}" src
+
+      - name: Test with branch coverage
+        run: pytest
+
+      - name: End-to-end certified-proxy smoke
+        run: |
+          reliable-proxy collect \
+            --samples 40 --units 4 --seed 700 \
+            --output /tmp/train.npz
+          reliable-proxy collect \
+            --samples 12 --units 4 --seed 1700 \
+            --output /tmp/validation.npz
+          reliable-proxy train \
+            /tmp/train.npz /tmp/validation.npz \
+            --hidden-dim 8 --epochs 3 --batch-size 16 --patience 3 \
+            --checkpoint /tmp/proxy.npz \
+            --output-report /tmp/training.json
+          reliable-proxy solve \
+            --units 4 --seed 2700 --checkpoint /tmp/proxy.npz \
+            --relative-gap-tolerance 0.02
+          reliable-proxy benchmark \
+            --samples 2 --units 4 --regime high_demand --seed 3700 \
+            --checkpoint /tmp/proxy.npz \
+            --relative-gap-tolerance 0.02 \
+            --output-json /tmp/benchmark.json \
+            --output-csv /tmp/benchmark.csv
